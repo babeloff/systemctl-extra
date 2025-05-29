@@ -1,6 +1,7 @@
 = An extension for the systemctl command
 
-https://github.com/systemd/systemd/issues/37332
+* https://github.com/systemd/systemd/issues/37332
+* https://github.com/systemd/systemd/issues/37658
 
 
 == Description of Editor

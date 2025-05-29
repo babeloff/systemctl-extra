@@ -15,8 +15,9 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Edit a file, optionally at a specific line.
-    Edit(commands::edit::EditArgs), // 'edit' is now a subcommand again
-    // The 'Goodbye' command is removed
+    Edit(commands::edit::EditArgs),
+    /// List unit files with optional filtering and output formats.
+    List(commands::list::ListArgs),
 }
 
 fn main() {
@@ -25,6 +26,9 @@ fn main() {
     match cli.command {
         Some(Commands::Edit(args)) => { // Match the 'Edit' subcommand
             commands::edit::execute(&args);
+        }
+        Some(Commands::List(args)) => { // Add this match arm
+            commands::list::execute(&args);
         }
         None => {
             // If no subcommand is provided, Clap will automatically show help.

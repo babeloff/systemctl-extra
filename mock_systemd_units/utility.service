@@ -1,0 +1,12 @@
+[Unit]
+Description=Background Utility
+
+[Service]
+ExecStart=/usr/bin/utility-script
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+
+[X-extra]
+Tag=tooling

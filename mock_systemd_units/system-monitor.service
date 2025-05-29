@@ -1,0 +1,9 @@
+[Unit]
+Description=System Monitoring Agent
+
+[Service]
+ExecStart=/usr/bin/monitor-agent
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

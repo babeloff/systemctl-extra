@@ -1,0 +1,16 @@
+[Unit]
+Description=My Awesome Web Application
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/my-web-app
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+
+[X-extra]
+Tag=web_service
+Tag=frontend
+Environment=production
+Owner=Alice

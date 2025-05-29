@@ -1,0 +1,15 @@
+[Unit]
+Description=Database Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/database
+Type=forking
+
+[Install]
+WantedBy=multi-user.target
+
+[X-extra]
+Tag=backend
+Tag=database
+Owner=Bob
