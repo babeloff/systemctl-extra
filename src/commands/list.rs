@@ -4,7 +4,7 @@ use serde_json;
 use std::collections::HashMap;
 use std::fs;
 use std::env;
-use std::io::{self, BufReader, BufRead, IsTerminal, Write};
+use std::io::{self, Write, BufReader, BufRead, IsTerminal};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use walkdir::WalkDir;

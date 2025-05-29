@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::env;
 use std::fs;
-use std::io::{self, BufReader, BufRead};
+use std::io::{BufReader, BufRead};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 

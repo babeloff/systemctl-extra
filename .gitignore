@@ -1,1 +1,7 @@
-/target
+/target/
+/.mycli_units/
+/.pixi/
+/.vscode/
+/.idea/
+/.vscode-test/
+
