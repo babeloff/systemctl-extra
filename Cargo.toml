@@ -1,0 +1,67 @@
+[package]
+name = "systemctl-extra"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dirs = "6.0.0"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8.21"
+tera = "1.19"
+log = "0.4.27"
+env_logger = "0.11.8"
+serde_derive = "1.0.219"
+clap = { version = "4.5.37",  features = ["derive"] }
+xdg = "2.5.2"
+version = "*"
+
+[dev-dependencies]
+clap_complete = { version = "4.5.51", features = ["debug"] }
+
+[features]
+default = ["cli"]
+cli = []
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+
+[profile.test]
+opt-level = 2
+
+[workspace]
+# members = [
+#     "systemctl-extra-lib",
+# ]
+[patch.crates-io]
+# This section is intentionally left empty for future use.
+# It can be used to override dependencies with local or custom versions.
+# [lib]
+# name = "systemctl_extra_lib"
+# path = "src/lib.rs"
+
+[[bin]]
+name = "systemctl-extra"                                                                                    
+path = "src/main.rs"
+
+# [dependencies.systemctl-extra-lib]
+# path = "../systemctl-extra-lib"
+
+# [features]
+# cli = ["systemctl-extra/cli"]
+
+# [dependencies.systemctl-extra-lib/cli]
+# default-features = false
+# This is the main binary for the systemctl-extra CLI tool.
+# It depends on the systemctl-extra-lib crate for its functionality.
+# The `cli` feature is enabled to include command-line interface capabilities.
+# The `default-features` is set to false to avoid pulling in unnecessary dependencies.
+# The `path` attribute points to the local library crate.
+# This allows the CLI to use the library's functionality without needing to publish it to crates.io.
+# The `systemctl-extra-lib` crate provides the core functionality for the systemctl-extra tool.
+# The `systemctl-extra-cli` binary is the entry point for the command-line interface.
+# It is designed to be used as a standalone executable that interacts with the systemctl-extra library.
+
+

@@ -1,0 +1,52 @@
+= An extension for the systemctl command
+
+https://github.com/systemd/systemd/issues/37332
+
+
+== Description of Editor
+
+There are a number of `systemd-generators`.
+https://www.freedesktop.org/software/systemd/man/latest/systemd.generator.html
+
+While it is possible to use `systemctl edit` to edit the `drop-in`s for the generated services.
+It would be useful to be able to create `drop-in`s for the source files for each of the generators.
+
+Examples:
+
+The `systemd-fstab-generator` would have a `drop-in` for the `/etc/fstab` file not just the generated mount files.
+
+The `podman-system-generator` https://github.com/containers/podman/tree/v5.5.0-rc2/cmd/quadlet has its own `drop-ins` directories already. 
+
+User Experience:
+
+There would need to be some way to indicate that the editor should edit `drop-ins` for the source rather than the generated unit-files. 
+Maybe `systemctl edit --gen systemd-fstab-generator` or in the case where the generator names are consistently named `systemctl edit --gen fstab`. 
+In the case of fstab the source is just one file so the specific object is not needed. 
+In the case of podman-quadlets it could be something like `systemctl edit --gen quadlet foo.container`. 
+In order for this to work the generators would themselves need to be `drop-in` aware, like `podman-system-generator` already is. 
+It would also be necessary to register each of the generators and provide meta-data 
+so that `systemctl edit` would know where to discover the appropriate `drop-in` directories.
+
+== Description of revised editor behavior
+
+I would like to be able to edit the `foo.container` file in the `drop-in` directory 
+used by `systemd-generators` by running `systemctl edit --gen quadlet foo.container`.
+
+
+== Alternatives 
+
+I can currently edit the `drop-in` for the generated unit-files.
+e.g. 
+`systemctl edit quadlet.service`
+
+While this works, it is clumsy. 
+
+== Generator Support
+
+I think the best way to implement this is to cause systemctl edit ... to ask the generator to supply an appropriate drop-in folder. 
+The systemd.generator spec would need to support additional command line options to provide this information. 
+
+* quadlet : generates services for podman containers
+* fstab-generator : generates mount unit files, one for each line in /etc/fstab
+* pixi-service-generator : scans a project or global workspace for packages which are registered as services
+

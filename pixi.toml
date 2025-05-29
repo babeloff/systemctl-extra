@@ -1,0 +1,54 @@
+# pixi.toml for the systemctl-extra Rust CLI project
+
+[workspace]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+channels = [
+  "https://prefix.dev/conda-forge",
+]
+preview = ["pixi-build"]
+description = "A Rust CLI tool with advanced systemctl-like features."
+authors = ["Fred Eisele <fred.eisele@vanderbilt.edu>"]
+# members = [
+#     "systemctl-extra-cli",
+#     "systemctl-extra-lib",
+# ]
+license = "MIT OR Apache-2.0"
+
+[package]
+name = "systemctl-extra"
+version = "0.1.0"
+[package.build]
+backend = { name = "pixi-build-rust", version = "0.1.*" }
+channels = [
+  "https://prefix.dev/pixi-build-backends",
+  "https://prefix.dev/conda-forge",
+]
+
+
+[dependencies]
+rust = ">=1.70.0"
+systemctl-extra = { path = "." }
+
+[tasks.build]
+cmd = "cargo build"
+
+[tasks.build-release]
+cmd = "cargo build --release"
+
+[tasks.test]
+cmd = "cargo test"
+
+[tasks.publish-s3]
+cmd = [
+    "cargo build --release", # First, ensure the release binary is built
+    "echo 'Rust binary built at: target/release/systemctl-extra'",
+    "echo '------------------------------------------------------------------'",
+    "echo 'TODO: Implement your specific publishing logic to prefix-dev here!'",
+    "echo 'This might involve `curl`, `aws s3 cp`, a custom script, or a specific `prefix-dev` CLI tool.'",
+    "echo 'Example: scp ./target/release/systemctl-extra user@prefix-dev.example.com:/path/to/repo'",
+    "echo '------------------------------------------------------------------'"
+]
+
+# Task to run the CLI directly for development (e.g., `pixi run start -- edit my-unit.service`)
+[tasks.start]
+cmd = ["cargo","run"]
