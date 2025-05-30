@@ -5,8 +5,10 @@ use std::io::{BufReader, BufRead};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use crate::systemd_modes::HasPrivilege;
+
 /// Arguments for the 'edit' command.
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 pub struct EditArgs {
     /// The name of the unit (e.g., 'nginx.service') or
     /// the path to a generated unit file if --trans is used.
@@ -18,6 +20,13 @@ pub struct EditArgs {
     #[arg(long)]
     pub trans: bool,
 }
+
+impl HasPrivilege for EditArgs {
+    fn privilege(&self) -> crate::systemd_modes::UnitPrivilege {
+        crate::systemd_modes::UnitPrivilege::System // Default to system privilege
+    }
+}   
+
 
 /// Extracts the SourcePath from a unit-like configuration file.
 /// Assumes a basic INI-like format with a [Unit] section and SourcePath=key.

@@ -9,12 +9,16 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use walkdir::WalkDir;
 
+use crate::systemd_modes::HasPrivilege;
+
+
 /// Represents a single unit file entry for output.
 #[derive(Debug, Serialize, Clone)]
 struct UnitFileEntry {
     unit_file: String,
     state: String,        // e.g., "enabled", "disabled", "static"
     vendor_preset: String, // e.g., "enabled", "disabled"
+    path: PathBuf, // Full path to the unit file
 }
 
 /// Enum for output format.
@@ -27,7 +31,7 @@ enum OutputFormat {
 }
 
 /// Arguments for the 'list' command.
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 pub struct ListArgs {
     /// Filter unit files by a tag in their [X-extra] section.
     #[arg(long)]
@@ -41,6 +45,12 @@ pub struct ListArgs {
     #[arg(long)]
     no_pager: bool,
 }
+
+impl HasPrivilege for ListArgs {
+    fn privilege(&self) -> crate::systemd_modes::UnitPrivilege {
+        crate::systemd_modes::UnitPrivilege::System // Default to system privilege
+    }
+}   
 
 /// Simple INI-like parser for unit files to extract sections and properties.
 fn parse_unit_file(path: &Path) -> Result<HashMap<String, HashMap<String, Vec<String>>>, String> {
@@ -77,55 +87,57 @@ fn parse_unit_file(path: &Path) -> Result<HashMap<String, HashMap<String, Vec<St
 }
 
 /// Executes the 'list' command logic.
-pub fn execute(args: &ListArgs) {
-    let mock_units_dir = PathBuf::from("./mock_systemd_units");
-    if !mock_units_dir.exists() {
-        eprintln!("Error: Mock unit files directory not found: {}", mock_units_dir.display());
-        eprintln!("Please create it and add some sample .service files.");
-        return;
-    }
-
+pub fn execute(search_paths: Vec<PathBuf>, unit_extensions: &'static [&'static str], args: &ListArgs) {
+    
     let mut unit_files: Vec<UnitFileEntry> = Vec::new();
 
-    for entry in WalkDir::new(&mock_units_dir)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file() && e.path().extension().map_or(false, |ext| ext == "service")) // Only .service files for now
-    {
-        let path = entry.path();
-        let unit_file_name = path.file_name()
-            .and_then(|s| s.to_str())
-            .unwrap_or("unknown.service")
-            .to_string();
-
-        let mut matches_filter = true;
-        if let Some(filter_value) = &args.filter {
-            matches_filter = false; // Assume no match until proven
-            if let Ok(sections) = parse_unit_file(path) {
-                if let Some(x_extra_section) = sections.get("X-extra") {
-                    if let Some(tags) = x_extra_section.get("Tag") {
-                        if tags.iter().any(|tag| tag == filter_value) {
-                            matches_filter = true;
-                        }
-                    }
-                }
-            } else {
-                // If parsing fails, treat as no match for filter
-                matches_filter = false;
-            }
+    for search_path in search_paths {
+        if !search_path.exists() {
+            // println!("Skipping non-existent path: {}", search_path.display());
+            continue;
         }
 
-        if matches_filter {
-            // Simplistic mock for state and vendor_preset
-            // In a real systemctl, this would be complex (symlink checks, actual systemd calls)
-            let state = "enabled".to_string();
-            let vendor_preset = "enabled".to_string();
+        for entry in WalkDir::new(&search_path)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.file_type().is_file() && e.path().extension().map_or(false, |ext| unit_extensions.contains(&ext.to_str().unwrap_or(""))))
+        {
+            let path = entry.path();
+            let unit_file_name = path.file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or("unknown.unit")
+                .to_string();
 
-            unit_files.push(UnitFileEntry {
-                unit_file: unit_file_name,
-                state,
-                vendor_preset,
-            });
+            let mut matches_filter = true;
+            if let Some(filter_value) = &args.filter {
+                matches_filter = false; // Assume no match until proven
+                if let Ok(sections) = parse_unit_file(path) {
+                    if let Some(x_extra_section) = sections.get("X-extra") {
+                        if let Some(tags) = x_extra_section.get("Tag") {
+                            if tags.iter().any(|tag| tag == filter_value) {
+                                matches_filter = true;
+                            }
+                        }
+                    }
+                } else {
+                    // If parsing fails, treat as no match for filter
+                    matches_filter = false;
+                }
+            }
+
+            if matches_filter {
+                // Simplistic mock for state and vendor_preset
+                // In a real systemctl, this would be complex (symlink checks, actual systemd calls)
+                let state = "enabled".to_string(); // Always enabled for simplicity
+                let vendor_preset = "enabled".to_string(); // Always enabled for simplicity
+
+                unit_files.push(UnitFileEntry {
+                    unit_file: unit_file_name,
+                    state,
+                    vendor_preset,
+                    path: path.to_path_buf(),
+                });
+            }
         }
     }
 
